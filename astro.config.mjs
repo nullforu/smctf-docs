@@ -4,7 +4,8 @@ import starlight from '@astrojs/starlight'
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://nullforu.github.io/smctf-docs',
+    site: 'https://nullforu.github.io',
+    base: '/smctf-docs',
     integrations: [
         starlight({
             title: 'My Docs',
