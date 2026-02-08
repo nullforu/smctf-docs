@@ -4,24 +4,33 @@ import starlight from '@astrojs/starlight'
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://nullforu.github.io',
-    base: '/smctf-docs',
+    site: 'https://ctf.null4u.cloud',
+    // base: '/smctf-docs',
     integrations: [
         starlight({
-            title: 'My Docs',
-            social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+            title: 'SMCTF Docs',
+            social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/nullforu/smctf' }],
             sidebar: [
                 {
-                    label: 'Guides',
-                    items: [
-                        // Each item here is one entry in the navigation menu.
-                        { label: 'Example Guide', slug: 'guides/example' },
-                    ],
+                    label: 'SMCTF',
+                    autogenerate: { directory: 'smctf' },
+                },
+                {
+                    label: 'Container Provisioner',
+                    autogenerate: { directory: 'container-provisioner' },
+                },
+                {
+                    label: 'Infrastructure',
+                    autogenerate: { directory: 'infra' },
                 },
                 {
                     label: 'Reference',
                     autogenerate: { directory: 'reference' },
                 },
+                {
+                    label: 'FAQ & Troubleshooting',
+                    autogenerate: { directory: 'faq' },
+                }
             ],
         }),
     ],
