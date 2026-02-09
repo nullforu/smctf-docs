@@ -4,7 +4,21 @@ title: REST API 문서
 
 > 작성 중인 문서입니다. 추후 더욱 더 세부적인 내용이 추가될 예정입니다.
 
-- Base URL: `http://<HOST>:8081`
+# SMCTF Container Provisioner API Documentation
+
+Base URL: `http://localhost:8081`
+
+## Authentication
+
+All endpoints require an API key when API key auth is enabled (default). You can provide it via:
+
+- `X-API-KEY` header
+- `api_key` query parameter
+
+```bash
+curl -H "X-API-KEY: <your-api-key>" http://localhost:8081/healthz
+curl "http://localhost:8081/healthz?api_key=<your-api-key>"
+```
 
 ## Health
 

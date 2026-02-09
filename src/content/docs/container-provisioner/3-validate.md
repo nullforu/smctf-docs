@@ -29,7 +29,7 @@ Container Provisioner는 스택 생성 요청 시, 운영자의 휴먼 에러나
 
 **또한 최소한의 보안 조치가 적용되었음에도 불구하고, 참여자가 어떠한 방법으로든 호스트 워커 노드에 영향을 미치거나 다른 스택 Pod에 영향을 미치는 행위가 발생할 경우 이는 부정 행위 및 운영 방해로 간주되며, 즉시 퇴출되거나 적절한 제재가 가해질 수 있습니다.**
 
-## OPA Gatekeeper 사용하기
+### OPA Gatekeeper 사용하기
 
 앞서 언급한 기본적인 검증은 Container Provisioner 마이크로서비스에서 자체적으로 수행되는 1차적인 보안 조치이지만, 보다 세부적이고 Shift Left/Right 모두를 포함한 PaC(Policy as Code) 솔루션을 적용하고자 한다면 OPA Gatekeeper 또는 Kyverno와 같은 정책 엔진을 쿠버네티스 클러스터에 도입할 수 있습니다.
 

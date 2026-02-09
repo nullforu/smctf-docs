@@ -34,7 +34,7 @@ spec:
 
 마이크로서비스는 실행 시 모든 네임스페이스에 대해 최소 하나의 NetworkPolicy 존재 여부를 확인합니다. 그 이유는 앞서 설명한 내용과 같습니다.
 
-## 스택 Pod 간 네트워크 격리
+### 스택 Pod 간 네트워크 격리
 
 이 부분에 대해선 개발 팀에서 많은 고민을 했습니다. 
 결론적으로 스택 Pod 간 네트워크 격리는 기본적으로 제공하지 않기로 결정하였고, Native Kubernetes에선 Pod 간 네트워크 격리를 구현하기가 현실적으론 불가능하다고 판단하였습니다.
@@ -47,8 +47,8 @@ NetworkPolicy를 사용하지 않고 initContainers를 통해 iptables 규칙을
 
 또한 스택 Pod 간 네트워크 격리를 하지 않아도 CTF 운영상 큰 문제가 없다고 판단하였습니다. 스택 Pod는 언제든지 재생성될 수 있으며, 플래그 제출이 완료된다면 즉시 삭제되는 원칙으로 운영되기 때문입니다.
 
-추가적으로 Container Provisioner는 별도의 인증 및 권한 관리 없이 REST API가 호출될 수 있기 때문에 퍼블릭 네트워크에 노출되지 않도록 주의해야 하지만, 
-디버깅의 이유로 [대시보드](./5-dashboard.md) 등을 AWS ALB 등으로 노출해야하는 경우가 있을 수 있습니다. 
+Container Provisioner는 API Key 기반의 인증(Authentication)을 지원하지만, API Key가 노출될 가능성을 완전히 배제할 수 없기 때문에 퍼블릭 네트워크에 노출되는 것을 권장하지 않습니다.
+다만 디버깅의 이유로 [대시보드](/container-provisioner/5-dashboard) 등을 AWS ALB 등으로 노출해야하는 경우가 있을 수 있습니다.
 
 이땐 스택 Pod에서 NodePort를 통해 우회하여 접속할 수 있는 시나리오가 발생할 수 있기 때문에 NodePort가 겹치지 않도록 아래와 같은 NodePort 범위를 기본값으로 설정하였습니다.
 
@@ -56,10 +56,3 @@ NetworkPolicy를 사용하지 않고 initContainers를 통해 iptables 규칙을
 - Stack NodePort: 31001-32767 (이 범위를 퍼블릭 워커 노드에서 `0.0.0.0/0`으로 접근을 허용)
 
 이 범위는 환경 변수를 통해 변경할 수 있습니다. 마찬가지로 프로젝트에서 제공되는 인프라에선 기본적으로 관련 설정이 적용되어 있습니다.
-
----
-
-2차적인 방어 수단으로 Container Provisioner 마이크로서비스의 HTTP REST API를 호출할 때 헤더에서 `X-API-KEY` 값을 요구하도록 설정할 계획입니다.
-API Key는 환경변수로 주입되며, 메인 CTF 서비스에서 Container Provisioner API를 호출할 때 반드시 해당 헤더와 환경 변수로 설정된 값을 포함해야 합니다.
-
-이 기능은 추후 제공될 예정입니다.

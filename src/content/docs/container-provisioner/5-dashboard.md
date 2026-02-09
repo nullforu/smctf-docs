@@ -33,3 +33,5 @@ Container Provisioner는 기본적으로 REST API 기반의 마이크로서비�
 ---
 
 대시보드를 통하지 않고 REST API를 호출하여 Container Provisioner에 대한 작업을 직접 수행할 수도 있습니다. Postman이나 curl과 같은 도구를 활용하여 API를 호출할 수 있습니다.
+
+또한 대시보드에 접속하기 위해서 API Key를 요구하지는 않습니다. 하지만 대시보드에서 REST API를 호출할땐 API Key를 요구하며, 사진상 보이지 않지만 API Key 입력란이 존재합니다.
