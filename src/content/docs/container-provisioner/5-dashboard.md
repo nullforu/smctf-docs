@@ -6,15 +6,13 @@ Container Provisioner는 기본적으로 REST API 기반의 마이크로서비�
 
 대시보드는 기본적으로 Base URL의 `/dashboard` 경로에서 접근할 수 있으며 스택의 생성, 삭제 및 상태 확인 등의 모든 REST API 기능을 사용할 수 있도록 합니다.
 
-**최소한의 보안 조치로 API Key를 요구하지만, 외부로 노출되지 않는 내부 마이크로서비스이기 때문에 퍼블릭 네트워크에 노출되지 않도록 주의해야 합니다.**
+**최소한의 보안 조치로 API Key를 요구하는 것이 기본값이지만, 외부로 노출되지 않는 내부 마이크로서비스이기 때문에 퍼블릭 네트워크에 노출되지 않도록 주의해야 합니다.**
 
 ---
 
-대시보드 UI는 아래와 같이 구성되어 있습니다. 기본적인 REST API 기능을 포함하고 있으나, 고급 기능은 포함하고 있지 않습니다.
-
 ### Settings
 
-기본적인 API Base URL이나 `GET /healthz`, `GET /stacks`, `GET /stats`와 같은 Container Provisioner의 상태를 확인할 수 있는 기능을 제공합니다.
+기본적인 API Base URL이나 API 키 설정 및 `GET /healthz`, `GET /stacks`, `GET /stats`와 같은 Container Provisioner의 상태를 확인할 수 있는 기능을 제공합니다.
 
 ![dash1](images/5-dashboard/image.png)
 
@@ -29,6 +27,14 @@ Container Provisioner는 기본적으로 REST API 기반의 마이크로서비�
 스택 상세 조회, 요약 정보, 삭제 기능을 제공하며 각각 `GET /stacks/{stack_id}`, `GET /stacks/{stack_id}/status`, `DELETE /stacks/{stack_id}` API를 호출합니다.
 
 ![dash3](images/5-dashboard/image-2.png)
+
+### Manage Stacks
+
+스택 목록을 보다 쉽게 관리할 수 있는 기능을 제공합니다. 이는 SMCTF 플랫폼에서 관리자 페이지에서도 제공되는 기능입니다.
+
+![dash4](images/5-dashboard/image-4.png)
+
+![dash5](images/5-dashboard/image-3.png)
 
 ---
 
