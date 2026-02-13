@@ -1,5 +1,7 @@
 ---
 title: 6. NetworkPolicy 구성
+sidebar:
+    order: 6
 ---
 
 Container Provisioner, 메인 CTF 서비스와 스택 Pod들은 동일한 Kubernetes 클러스터에서 동작합니다. 따라서 스택 Pod들이 메인 CTF 서비스나 Container Provisioner 마이크로서비스에 접근할 수 없도록 Kubernetes NetworkPolicy를 구성해야 합니다.

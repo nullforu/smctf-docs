@@ -1,5 +1,7 @@
 ---
 title: 8. 로깅 및 모니터링
+sidebar:
+    order: 8
 ---
 
 Container Provisioner 마이크로 서비스도 마찬가지로 메인 CTF 서비스와 동일한 로깅 및 모니터링 기능을 제공합니다.

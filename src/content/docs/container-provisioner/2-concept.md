@@ -1,7 +1,8 @@
 ---
 title: 2. 개념 및 컨셉
 description: container-provisioner의 개념 및 컨셉에 대한 문서입니다.
-order: 2
+sidebar:
+    order: 2
 ---
 
 CTF를 운영하였을때, 가장 큰 고민은 **어떻게 참가자들에게 문제별 격리된 환경(컨테이너/VM/인스턴스)을 제공할 것**인가였습니다.

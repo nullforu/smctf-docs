@@ -1,7 +1,7 @@
 ---
 title: 1. 개요
-description: container-provisioner에 대한 설치 방법과 컨셉, 아키텍처 및 REST API 문서입니다.
-order: 1
+sidebar:
+    order: 1
 ---
 
 **Container Provisioner**는 SMCTF 플랫폼에서 사용자가 문제별로 격리된 컨테이너 환경을 제공받을 수 있도록 하는 핵심 컴포넌트(마이크로서비스)입니다.

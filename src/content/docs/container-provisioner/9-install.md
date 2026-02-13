@@ -1,6 +1,7 @@
 ---
 title: 9. 설치 및 환경 설정 
-description: container-provisioner의 설치 및 환경 설정 방법에 대한 문서입니다.
+sidebar:
+    order: 9
 ---
 
 > 본 문서에선 기본적인 Container Provisioner 설치 및 운영 환경 구성에 대해 다룹니다.

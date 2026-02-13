@@ -30,7 +30,7 @@ export default defineConfig({
                 {
                     label: 'FAQ & Troubleshooting',
                     autogenerate: { directory: 'faq' },
-                }
+                },
             ],
         }),
     ],

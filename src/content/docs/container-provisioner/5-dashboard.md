@@ -1,5 +1,7 @@
 ---
 title: 5. 웹 대시보드
+sidebar:
+    order: 5
 ---
 
 Container Provisioner는 기본적으로 REST API 기반의 마이크로서비스로 동작하며, 편의를 위해 간단한 웹 인터페이스인 대시보드를 제공합니다.

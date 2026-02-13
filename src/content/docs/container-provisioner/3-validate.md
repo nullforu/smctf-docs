@@ -1,5 +1,7 @@
 ---
 title: 3. YAML Spec 검증 및 보안 솔루션
+sidebar:
+    order: 3
 ---
 
 Container Provisioner는 스택 생성 요청 시, 운영자의 휴먼 에러나 적절하지 않은 요청으로 부터 호스트를 보호하기 위해 다양한 검증과 보안 솔루션을 강제로 적용합니다.

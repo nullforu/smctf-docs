@@ -1,5 +1,7 @@
 ---
 title: 4. TTL 및 스케줄러
+sidebar:
+    order: 4
 ---
 
 Container Provisioner는 내부적으로 DynamoDB를 통해 스택과 관련된 메타데이터를 관리합니다. 때문에 DDB의 메타데이터와 쿠버네티스의 클러스터 상태가 일치하지 않을 경우가 있을 수 있고,
