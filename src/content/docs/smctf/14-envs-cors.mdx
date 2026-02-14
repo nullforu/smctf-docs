@@ -1,0 +1,177 @@
+---
+title: 14. 환경 변수 및 CORS 설정
+sidebar:
+    order: 95
+---
+
+앞서 언급한 내용중 사용자당 최대 스택이나 요청 속도 제한 등과 같은 세부적인 값들과 CORS를 백엔드 애플리케이션의 환경 변수를 통해 설정할 수 있습니다.
+
+CORS는 프로덕션 모드에서만 활성화되며, 마찬가지로 환경 변수를 통해 오리진을 설정할 수 있습니다.
+
+import { Aside } from '@astrojs/starlight/components'
+
+<Aside type='tip'>
+    애플리케이션이 업데이트되면서 환경 변수 또한 변경될 수 있습니다. 예시의 환경 변수는
+    [.env.example](https://github.com/nullforu/smctf/blob/main/.env.example) 파일을 참고하세요.
+</Aside>
+
+### Application 
+
+```ini
+# App
+APP_ENV=local
+HTTP_ADDR=:8080
+SHUTDOWN_TIMEOUT=10s
+AUTO_MIGRATE=true
+BCRYPT_COST=12
+```
+
+애플리케이션의 전반적인 설정을 구성하는 환경변수로, 실행 환경이나 HTTP 서버 주소와 포트, Graceful shutdown 타임아웃, 자동 마이그레이션 여부, 그리고 bcrypt 해싱의 비용 인자 등을 설정할 수 있습니다.
+기본 포트는 8080입니다.
+
+이때 자동 마이그레이션은 애플리케이션이 시작될 때 DB 마이그레이션을 자동으로 수행하는 기능으로, 기존에 데이터가 있는 경우 무시되므로 프로덕션 환경에서도 사용할 수 있습니다. 다만 마이그레이션이 필요한 변경사항이 있는 경우 수동으로 마이그레이션을 수행하세요.
+
+`BCRYPT_COST`는 bcrypt 해싱의 비용 인자로, 값이 높을수록 보안성이 높아지지만 해싱에 더 많은 시간이 소요됩니다. 일반적으로 12 이상의 값을 권장하지만, 시스템의 성능과 요구사항에 따라 적절히 조정하세요.
+
+### DB
+
+```ini
+# PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=app_user
+DB_PASSWORD=app_password
+DB_NAME=app_db
+DB_SSLMODE=disable
+DB_MAX_OPEN_CONNS=25
+DB_MAX_IDLE_CONNS=10
+DB_CONN_MAX_LIFETIME=30m
+```
+
+PostgreSQL 데이터베이스 연결을 전반적인 설정입니다. 실제 프로덕션 환경에선 AWS RDS 엔드포인트를 추가합니다. 필요에 따라 적절히 조정하세요.
+
+### Redis
+
+```ini
+# Redis
+REDIS_ADDR=localhost:6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_POOL_SIZE=20
+```
+
+Redis 연결에 대한 설정입니다. 실제 프로덕션 환경에선 AWS ElastiCache 엔드포인트를 추가합니다. 필요에 따라 적절히 조정하세요.
+
+### JWT
+
+```ini
+# JWT
+JWT_SECRET=change-me
+JWT_ISSUER=smctf
+JWT_ACCESS_TTL=24h
+JWT_REFRESH_TTL=168h
+```
+
+JWT 토큰의 시크릿 키와 발급자, 그리고 액세스 토큰과 리프레시 토큰의 TTL을 설정합니다. 
+
+<Aside type='caution'>
+    `JWT_SECRET`은 반드시 변경되어야 하며, 충분히 길고 예측 불가능한 고유의 값으로 설정해야 합니다. 프로덕션 환경에선 반드시 안전하게 관리되어야 하며 절대 노출되지 않도록 주의하세요.
+</Aside>
+
+### Security & Flag submit rate limit
+
+```ini
+# Security
+FLAG_HMAC_SECRET=change-me-too
+SUBMIT_WINDOW=1m
+SUBMIT_MAX=10
+```
+
+<Aside type='caution'>
+    `FLAG_HMAC_SECRET`는 플래그 제출의 무결성을 검증하기 위한 HMAC 시크릿 키로, 반드시 변경되어야 하며 충분히 길고 예측 불가능한 고유의 값으로 설정해야 합니다. 프로덕션 환경에선 반드시 안전하게 관리되어야 하며 절대 노출되지 않도록 주의하세요.
+</Aside>
+
+아래의 두 옵션은 플래그 제출에 대한 요청 속도 제한을 설정하는 옵션입니다. `SUBMIT_WINDOW` 내에 `SUBMIT_MAX` 이상의 플래그 제출을 허용하지 않도록 설정합니다. 이는 Brute Force 공격을 방지하기 위한 기본적인 보안 조치입니다. 필요에 따라 적절히 조정하세요.
+
+### Cache
+
+```ini
+# Cache
+TIMELINE_CACHE_TTL=60s
+LEADERBOARD_CACHE_TTL=60s
+APP_CONFIG_CACHE_TTL=2m
+```
+
+캐시 TTL(Time To Live) 설정으로, 자세한 내용은 [Redis 캐싱](/smctf/18-caching) 문서를 참고하세요. DB 쿼리를 최소화하기 위한 캐시 설정입니다.
+
+### CORS
+
+```ini
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://smctf.example.com
+```
+
+CORS는 프로덕션 모드에서 활성화되며, 위 환경 변수를 통해 허용된 오리진을 설정할 수 있습니다.
+여러 오리진을 허용하려면 쉼표로 구분하여 나열하세요.
+
+### Stack (Container Provisioner)
+
+```ini
+# Stack (Container Provisioner)
+STACKS_ENABLED=true
+STACKS_MAX_PER_USER=3
+STACKS_PROVISIONER_BASE_URL=http://localhost:8081
+STACKS_PROVISIONER_API_KEY=change-me
+STACKS_PROVISIONER_TIMEOUT=5s
+STACKS_CREATE_WINDOW=1m
+STACKS_CREATE_MAX=1
+```
+
+[Container Provisioner](/container-provisioner)에 대한 클라이언트 설정과 스택 생성에 대한 제한 설정입니다. 
+
+`STACKS_MAX_PER_USER`는 한명의 유저가 동시에 생성할 수 있는 스택의 최대 개수를 설정하는 옵션입니다. 리소스 관리에 있어 중요한 설정이므로 적절히 조정하세요. 2~3개를 권장하지만 상황에 따라 1개로 제한할 수도 있습니다.
+
+`STACK_PROVISIONER_API_KEY`는 내부 마이크로서비스 간 통신 시 공통된 API Key를 요구하는 방식으로 인증을 구현하기 위한 시크릿 키입니다.
+마이크로서비스간 통신에서 트래픽이 노출될 일은 없지만, 만일의 상황을 대비하여 충분히 길고 예측 불가능한 고유의 값으로 설정하는 것을 권장합니다.
+
+`STACKS_CREATE_WINDOW`와 `STACKS_CREATE_MAX`는 스택 생성에 대한 요청 속도 제한을 설정하는 옵션입니다. 
+`STACKS_CREATE_WINDOW` 내에 `STACKS_CREATE_MAX` 이상의 스택 생성 요청을 허용하지 않도록 설정합니다. 필요에 따라 적절히 조정하세요.
+
+### Logging
+
+```ini
+# Logging
+LOG_DIR=logs
+LOG_FILE_PREFIX=app
+LOG_MAX_BODY_BYTES=1048576
+LOG_WEBHOOK_QUEUE_SIZE=1000
+LOG_WEBHOOK_TIMEOUT=5s
+LOG_WEBHOOK_BATCH_SIZE=20
+LOG_WEBHOOK_BATCH_WAIT=2s
+LOG_WEBHOOK_MAX_CHARS=1800
+LOG_DISCORD_WEBHOOK_URL=
+LOG_SLACK_WEBHOOK_URL=
+```
+
+기본적으로 SMCTF 백엔드는 로그를 파일로 저장하는 기능과 Stateless를 위한 Discord 및 Slack Webhook으로도 로그를 전송할 수 있습니다. 
+
+OpenTelemetry와 같은 외부 로깅 시스템과의 통합은 추후 지원할 예정입니다.
+자세한 내용은 [로깅 및 모니터링](/smctf/15-logging) 문서를 참고하세요.
+
+### S3 (Challenge Files)
+
+```ini
+# S3 Challenge Files
+S3_ENABLED=true
+S3_REGION=ap-northeast-2
+S3_BUCKET=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=
+S3_FORCE_PATH_STYLE=false
+S3_PRESIGN_TTL=15m
+```
+
+AWS S3 클라이언트를 사용하기 위한 옵션입니다. 자신의 고유한 S3 버킷을 지정하세요.
+
+프로덕션에서 IRSA로 AWS 리소스에 접근하는 경우 `S3_ACCESS_KEY_ID`와 `S3_SECRET_ACCESS_KEY`는 필요하지 않습니다. 나머지 설정은 필요에 따라 적절하게 조정하세요.

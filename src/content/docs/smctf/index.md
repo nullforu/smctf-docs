@@ -10,7 +10,6 @@ sidebar:
 
 쉬운 사용성과 유연한 배포, 그리고 기본적으로 제공되는 문제별 컨테이너 기반의 격리된 환경을 특징으로 하는 CTF 플랫폼으로, 누구나 MIT License를 기반으로 자유롭게 사용하고 기여할 수 있습니다. 
 
-
 _(기여시 가이드라인을 참조해주세요.)_
 
 ### 프로젝트 배경
@@ -52,3 +51,9 @@ _(기여시 가이드라인을 참조해주세요.)_
 - Database, Cache: [PostgreSQL](https://www.postgresql.org/)(instead of MySQL/MariaDB), [Redis](https://redis.io/)
 - Testing: [Testcontainers for Go](https://github.com/testcontainers/testcontainers-go)
 - Infra, CI/CD (TBD): AWS, EKS, Terraform, Cloudflare, GitHub Actions, etc.
+
+---
+
+![AWS Architecture](images/2-concept/aws.drawio.png)
+
+![Kubernetes Architecture](images/2-concept/k8s.drawio.png)

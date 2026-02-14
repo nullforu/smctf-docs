@@ -17,4 +17,4 @@ sidebar:
 ![users1](images/7-users/image-1.png)
 
 보안상의 이유로 이메일은 공개하지 않으며, 기초적인 정보만 표시됩니다. 관리자 계정은 Admin 역할, 일반 유저는 User 역할로 RBAC를 구성합니다. 
-관리자 계정은 DB에 접근하여 직접 생성하고 Admin 역할을 할당해야 합니다. 이에 대한 자세한 내용은 [설치](/smctf/20-install-and-docker) 문서를 참고해주세요.
+관리자 계정은 DB에 접근하여 직접 생성하고 Admin 역할을 할당해야 합니다. 이에 대한 자세한 내용은 [설치](/smctf/20-install-and-docker) 문서를 참고하세요.
