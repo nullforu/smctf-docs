@@ -12,6 +12,10 @@ export default defineConfig({
             social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/nullforu/smctf' }],
             sidebar: [
                 {
+                    label: 'CHANGELOG',
+                    autogenerate: { directory: 'changelog' },
+                },
+                {
                     label: 'SMCTF',
                     autogenerate: { directory: 'smctf' },
                 },
