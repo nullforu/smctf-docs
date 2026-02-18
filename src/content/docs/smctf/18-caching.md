@@ -10,7 +10,7 @@ SMCTF에서 Redis는 크게 캐싱 레이어와 [Rate Limiting](./16-rate-limit.
 
 - JWT Refresh 토큰 정보 (`refresh:<UUID>`)
 - App Config (사이트 설정) DB 쿼리 결과 (`app_config:cached`)
-- Timeline 및 Leaderboard DB 쿼리 결과 (`timeline:<Window=0>`, `leaderboard:users`)
+- Timeline 및 Leaderboard DB 쿼리 결과 (`timeline:users`, `timeline:teams`, `leaderboard:users`, `leaderboard:teams`)
 
 강제로 캐싱을 무효화하려면 아래의 명령어를 통해 Redis에서 해당 키를 삭제할 수 있습니다.
 
