@@ -12,3 +12,9 @@ SMCTF의 주요 모토(슬로건)은 누구나 쉽게 배포하여 사용할 수
 - https://github.com/nullforu/smctf-infra
 
 이 레포지토리엔 Terraform HCL 및 Kubernetes Helm 차트가 포함되어 있으며, 몇몇 구성만 수정한다면 바로 배포하여 사용할 수 있도록 설계되었습니다. 자세한 내용은 다음 문서를 참조하세요.
+
+---
+
+![AWS Architecture](architecture/aws.drawio.png)
+
+![Kubernetes Architecture](architecture/k8s.drawio.png)
