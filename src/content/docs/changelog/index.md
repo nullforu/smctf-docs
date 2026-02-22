@@ -4,6 +4,24 @@ sidebar:
     order: 1
 ---
 
+### v1.2.0 (2026-02-22)
+
+아래와 같은 개선 및 기능이 추가되었습니다. `v1.1.0`과 호환되며 [Container Provisioner v1.1.0](/changelog/container-provisioner), [Infrastructure v1.0.0](/changelog/infra)과 호환됩니다.
+
+---
+
+- JSON으로 구조화된 로깅을 지원하며 OpenMetrics 엔드포인트(`/metrics`)가 추가되었습니다. 이에 따라 로깅 및 모니터링 시스템이 크게 변경되었으며 더 이상 Discord/Slack 웹훅 로깅을 지원하지 않습니다. 이는 보안상의 이유도 있다고 판단하였기 때문에 이전 버전과 호환되지 않는 변경 사항입니다.
+- 자세한 내용은 인프라 문서의 [로깅 및 모니터링](/infra/6-observability) 문서를 참조하세요. PR [#39](https://github.com/nullforu/smctf/pull/39)
+
+---
+
+- Admin 팀 및 초기 관리자 생성 기능이 추가되었습니다. 활성화 시 자동 DB 마이그레이션과 함께 Admin 팀과 초기 관리자 계정이 생성되는 기능으로, DB에 아무 데이터가 없는 상태에서만 실행됩니다.
+- 자세한 내용은 [DB ER 및 마이그레이션](/smctf/19-db) 문서를 참조하세요. PR [#40](https://github.com/nullforu/smctf/pull/40)
+
+--- 
+
+- 이제 관리자 유저(Role=admin) 또한 집계에서 제외됩니다. 이에 대한 로직은 제한(차단)된 유저와 동일하게 처리됩니다.
+
 ### v1.1.0 (2026-02-18)
 
 `v1.0.0` 릴리즈 이후 몇가지 개선과 기능 추가, 버그 수정을 포함한 릴리즈입니다. `v1.0.0`과 호환되지 않는 API 변경이 포함되어 있습니다.

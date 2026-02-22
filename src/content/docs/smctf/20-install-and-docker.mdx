@@ -4,11 +4,17 @@ sidebar:
     order: 120
 ---
 
+import { Aside } from '@astrojs/starlight/components'
+
+<Aside type='caution'>
+    Deprecated. 해당 문서에 대해선 더 이상 관련된 업데이트가 이루어지지 않을 예정이며, [인프라](/infra) 구조가 아닌 단일 애플리케이션으로써의 SMCTF 설치 및 Dockerfile 구성에 대해선 권장되지 않습니다.
+</Aside>
+
 SMCTF는 Go 언어로 작성된 애플리케이션으로, Docker를 사용하여 쉽게 배포할 수 있도록 Dockerfile이 제공됩니다. 
 
 스택 기능을 사용할 경우 [Container Provisioner](/container-provisioner)와 함께 사용해야 하며, 이 또한 Dockerfile을 통해 컨테이너 이미지로 빌드할 수 있습니다.
 
-이 문서는 로컬에서 테스트 용도로 SMCTF를 설치하고 구성하는 방법을 설명합니다. 실제 배포 환경에서는 EKS Kubernetes 클러스터와 같은 컨테이너 오케스트레이션 플랫폼을 사용하며, 이는 추후 별도의 문서에서 다룰 예정입니다.
+이 문서는 로컬에서 테스트 용도로 SMCTF를 설치하고 구성하는 방법을 설명합니다. 실제 배포 환경에서는 EKS Kubernetes 클러스터와 같은 컨테이너 오케스트레이션 플랫폼을 사용하며, 자세한 내용은 [인프라 문서](/infra)에서 설명합니다.
 
 ### Dockerfile
 
@@ -159,26 +165,3 @@ kind create cluster --name dev --config=kubernetes/cluster/kind.dev.yaml
 ```
 
 자세한 내용은 생략합니다. 본 프로젝트를 이러한 방식으로 프로덕션에서 운영하는 것은 절대 권장하지 않습니다. 이는 테스트 용도임을 명심하세요.
-
-### 관리자 역할 부여
-
-아래의 PostgreSQL 쿼리를 통해 기존 계정에 관리자 역할을 부여할 수 있습니다.
-
-```sql
--- INSERT INTO users (email, username, password_hash, role, team_id, created_at, updated_at) VALUES ('admin@smctf.com', 'admin', '$2b$12$5AajwaaA4.H9W..MEM7mT.QkxeyxXqUTLjpPLvjhXhWm8glrpcUcG', 'admin', 1, '2026-02-11 12:03:00', '2026-02-11 12:03:00');
-UPDATE users SET role='admin' WHERE email='admin@smctf.com';
-```
-
-관리자 계정을 처음으로 생성하는 방법은 SQL로 팀과 가입 인증 키를 생성한 후 UI에서 회원가입 후 다시 위 쿼리를 통해 해당 계정에 관리자 역할을 부여하는 방법이 있습니다. 
-
-```sql
-INSERT INTO teams (name) VALUES ('Admin Team');
-
-INSERT INTO registration_keys (code, created_by, team_id) VALUES ('000000', 0, 1);
--- 000000 가입 인증 키로 가입 후 계정 생성
-UPDATE users SET role='admin' WHERE email='생성된_관리자_계정_이메일';
---- 로그아웃 후 다시 로그인해야 관리자 권한이 적용됩니다.
-DELETE FROM registration_keys WHERE code='000000';
-```
-
-관리자 계정을 SQL 쿼리로 직접 생성할 수도 있지만, Bcrypt 해시된 비밀번호를 생성하는 과정이 필요하기 때문에 위 방법을 권장합니다. 

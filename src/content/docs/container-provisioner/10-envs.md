@@ -35,19 +35,11 @@ API_KEY=secret
 LOG_DIR=logs
 LOG_FILE_PREFIX=app
 LOG_MAX_BODY_BYTES=1048576
-LOG_WEBHOOK_QUEUE_SIZE=1000
-LOG_WEBHOOK_TIMEOUT=5s
-LOG_WEBHOOK_BATCH_SIZE=20
-LOG_WEBHOOK_BATCH_WAIT=2s
-LOG_WEBHOOK_MAX_CHARS=1800
-LOG_DISCORD_WEBHOOK_URL=
-LOG_SLACK_WEBHOOK_URL=
 ```
 
-기본적으로 SMCTF 백엔드는 로그를 파일로 저장하는 기능과 Stateless를 위한 Discord 및 Slack Webhook으로도 로그를 전송할 수 있습니다. 
+기본적으로 Container Provisioner는 JSON으로 구조화된 로그를 stdout/stderr로 출력하며, 시간대별로 로그 파일을 분리하여 저장하는 Rotating 로깅이 구현되어 있습니다. 
 
-OpenTelemetry와 같은 외부 로깅 시스템과의 통합은 추후 지원할 예정입니다.
-자세한 내용은 SMCTF의 [로깅 및 모니터링](/smctf/15-logging) 문서를 참고하세요. 동일합니다.
+자세한 내용은 인프라 문서의 [로깅 및 모니터링](/infra/6-observability) 문서를 참조하세요.
 
 ### Stack provisioning
 

@@ -28,6 +28,10 @@ export default defineConfig({
                     autogenerate: { directory: 'infra' },
                 },
                 {
+                    label: 'Image Builder',
+                    autogenerate: { directory: 'image-builder' },
+                },
+                {
                     label: 'Reference',
                     autogenerate: { directory: 'reference' },
                 },
