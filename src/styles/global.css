@@ -1,0 +1,53 @@
+/* 그룹(CHANGELOG, SMCTF) 아래 첫 ul에서만 1부터 시작 */
+#starlight__sidebar ul.top-level > li > details > ul {
+    counter-reset: l1;
+}
+
+/* 1단 항목 번호 증가 */
+#starlight__sidebar ul.top-level > li > details > ul > li {
+    counter-increment: l1;
+    counter-reset: l2;
+}
+
+/* 1단 링크에 1. 2. 3. */
+#starlight__sidebar ul.top-level > li > details > ul > li > a::before {
+    content: counter(l1) '. ';
+    opacity: 0.7;
+    font-weight: 500;
+    margin-right: 0.25rem;
+}
+
+/* 2단(중첩 details) ul에서 1부터 시작 */
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul {
+    counter-reset: l2;
+}
+
+/* 2단 항목 번호 증가 */
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul > li {
+    counter-increment: l2;
+    counter-reset: l3;
+}
+
+/* 2단 링크에 1.1 1.2 ... */
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul > li > a::before {
+    content: counter(l1) '.' counter(l2) ' ';
+    opacity: 0.7;
+    font-weight: 500;
+    margin-right: 0.25rem;
+}
+
+/* 3단까지 필요하면 */
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul > li > details > ul {
+    counter-reset: l3;
+}
+
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul > li > details > ul > li {
+    counter-increment: l3;
+}
+
+#starlight__sidebar ul.top-level > li > details > ul > li > details > ul > li > details > ul > li > a::before {
+    content: counter(l1) '.' counter(l2) '.' counter(l3) ' ';
+    opacity: 0.7;
+    font-weight: 500;
+    margin-right: 0.25rem;
+}

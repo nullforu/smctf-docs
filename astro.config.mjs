@@ -40,6 +40,7 @@ export default defineConfig({
                     autogenerate: { directory: 'faq' },
                 },
             ],
+            customCss: ['./src/styles/global.css'],
         }),
     ],
 })

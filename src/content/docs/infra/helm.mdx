@@ -1,0 +1,401 @@
+---
+title: Helm 차트 구성
+sidebar:
+    order: 5
+---
+
+SMCTF의 백엔드 및 Container Provisioner, Ingress와 SA/RBAC 리소스 등을 배포하기 위해 Kubernetes 내 모든 리소스는 Helm 차트를 통해 배포됩니다.
+여기엔 EKS 클러스터 내에서 실행되는 애플리케이션의 로그를 수집하여 CloudWatch Logs로 전송하는 FluentBit DaemonSet과 Prometheus ServiceMonitor CRD 리소스도 포함됩니다.
+
+아래의 명령어로 Helm 차트를 배포할 수 있습니다.
+
+```bash
+helm upgrade --install smctf ./kubernetes -f kubernetes/values.yaml
+```
+
+기본적으로 필요한 네임스페이스 등이 포함되어 있으며, `values.yaml`은 배포 전에 적절하게 수정하여 사용해야 합니다.
+
+SMCTF Helm 차트 설치 후 AWS LB Controller를 설치하세요. (IRSA 및 VPC ID를 필요로 하기 때문에 반드시 SMCTF Helm 차트 설치 후에 설치해야 합니다.)
+
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update eks
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=smctf \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller \
+  --set nodeSelector.role=backend \
+  --set vpcId="<VPC_ID>" \
+  --set region=ap-northeast-2
+```
+
+import { Aside } from '@astrojs/starlight/components'
+
+<Aside type='danger'>
+    Helm 차트의 구성은 배포 전에 반드시 검토하고 필요한 부분을 수정하여 사용하세요. 특히 백엔드 애플리케이션의 환경 변수는 보안과 성능에 직접적인 영향을 미칠 수 있으므로 주의 깊게 설정해야 합니다.
+
+    또한 프로덕션의 `values.yaml`은 민감한 정보를 포함하여 절대 노출되지 않도록 주의하세요. 필요한 경우 AWS Secrets Manager와 연동하여 민감한 정보를 관리하는 것을 권장합니다. (Terraform 구성은 직접 수정해야 합니다.)
+
+</Aside>
+
+`values.yaml`을 구성하기 위해 Terraform을 통해 프로비저닝된 리소스들의 출력 결과를 확인해야 합니다. 이는 `terraform output` 명령어를 통해 확인할 수 있으며, 이를 기반으로 Helm 차트의 `values.yaml`을 적절하게 수정하여 배포해야 합니다.
+
+Terraform 출력에 맞게 수정해야하는 필드는 아래와 같습니다.
+
+```yaml
+# - elbController.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
+# - backend.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
+# - provisioner.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
+# - fluentbit.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
+# - backend.config.DB_HOST (PostgreSQL RDS Endpoint)
+# - backend.config.REDIS_ADDR (ElastiCache Redis Endpoint, usually in the format "<cache-cluster-name>.xxxxxx.0001.use1.cache.amazonaws.com:6379")
+# - backend.ingress.securityGroupId (ALB Security Group ID)
+# - backend.ingress.https.certificateArn (ALB Certificate ARN, if HTTPS is enabled)
+# - provisioner.config.DDB_STACK_TABLE (DynamoDB Configuration)
+# - fluentbit.env.LOG_GROUP_NAME (CloudWatch Logs Group Name, usually in the format "/aws/eks/<project>-<env>/logs")
+```
+
+- `backend.ingress.securityGroupId`는 설정하지 않고 주석처리 할 수 있습니다. 이 경우 자동으로 HTTP 80 포트 또는 HTTPS 443 포트가 열리도록 ALB 보안 그룹이 구성됩니다.
+- HTTPS Ingress를 위한 ACM은 따로 발급받은 인증서 ARN이 필요합니다. 이는 Terraform에서 ACM 인증서를 생성하지 않습니다.
+- CloudWatch Logs Group Name은 `/aws/eks/<project>-<env>/logs` 형식으로 설정되어야 하며, IRSA 설정으로 인해 고정된 형식이여야 합니다.
+
+`values.yaml` 업데이트 또는 특정 필드를 업데이트하려면 아래와 같은 Helm 명령어를 사용할 수 있습니다.
+
+```bash
+helm upgrade --install smctf ./kubernetes \
+ --set backend.deployment.image.tag=v1.2.0 \
+ --set backend.deployment.replicas=3
+
+helm upgrade --install smctf ./kubernetes -f new-values.yaml
+```
+
+아래부터 `values.yaml`의 주요 구성 요소에 대한 설명과 예시 설정을 제공합니다. 필요에 따라 적절히 수정해야하며, 여기에 애플리케이션의 환경 변수가 모두 포함됩니다.
+외부에 노출되지 않도록 절대적으로 주의하세요.
+
+### 네임스페이스 구성
+
+```yaml
+namespaces:
+    create: true
+    backend: backend
+    stacks: stacks
+    logging: logging
+    monitoring: monitoring
+```
+
+### AWS ELB Controller 구성
+
+```yaml
+elbController:
+    enabled: true
+    serviceAccount:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+        labels:
+            app.kubernetes.io/name: aws-load-balancer-controller
+        annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/smctf-dev-irsa-alb
+```
+
+### ResourceQouta 및 LimitRange 구성
+
+```yaml
+stacksQuota:
+    enabled: true
+    name: stacks-resource-quota
+    namespace: stacks
+    hard:
+        requests.cpu: '6'
+        requests.memory: '6Gi'
+        limits.cpu: '6'
+        limits.memory: '6Gi'
+
+stacksLimitRange:
+    enabled: true
+    name: stacks-limit-range
+    namespace: stacks
+    containerDefaults:
+        max:
+            cpu: '500m'
+            memory: '512Mi'
+        default:
+            cpu: '500m'
+            memory: '512Mi'
+        defaultRequest:
+            cpu: '500m'
+            memory: '512Mi'
+```
+
+### NetworkPolicy 구성
+
+```yaml
+stacksDenyNetworkPolicy:
+    enabled: true
+    namePrefix: deny-from-stacks
+    denyFromNamespace: stacks
+    namespaces:
+        - monitoring
+        - backend
+```
+
+### Backend 구성
+
+```yaml
+backend:
+    enabled: true
+    serviceAccount:
+        name: smctf-backend
+        namespace: backend
+        annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/smctf-dev-irsa-backend
+    configName: smctf-backend-config
+    secretName: smctf-backend-secret
+```
+
+#### Backend ConfigMap 구성
+
+```yaml
+config:
+    APP_ENV: 'production'
+    HTTP_ADDR: ':8080'
+    SHUTDOWN_TIMEOUT: '10s'
+    AUTO_MIGRATE: 'true'
+    BCRYPT_COST: '12'
+    DB_HOST: 'smctf-dev-postgres.cp4cewyumxw7.ap-northeast-2.rds.amazonaws.com'
+    DB_PORT: '5432'
+    DB_USER: 'app_user'
+    DB_NAME: 'app_db'
+    DB_SSLMODE: 'require'
+    DB_MAX_OPEN_CONNS: '25'
+    DB_MAX_IDLE_CONNS: '10'
+    DB_CONN_MAX_LIFETIME: '30m'
+    REDIS_ADDR: 'smctf-dev-redis.q2pzrs.ng.0001.apn2.cache.amazonaws.com:6379'
+    REDIS_DB: '0'
+    REDIS_POOL_SIZE: '20'
+    JWT_ISSUER: 'smctf'
+    JWT_ACCESS_TTL: '24h'
+    JWT_REFRESH_TTL: '168h'
+    SUBMIT_WINDOW: '1m'
+    SUBMIT_MAX: '10'
+    TIMELINE_CACHE_TTL: '60s'
+    LEADERBOARD_CACHE_TTL: '60s'
+    APP_CONFIG_CACHE_TTL: '2m'
+    CORS_ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:5173,https://smctf.example.com,https://ctf.swua.kr'
+    STACKS_ENABLED: 'true'
+    STACKS_MAX_PER_USER: '3'
+    STACKS_PROVISIONER_BASE_URL: 'http://container-provisioner.backend.svc.cluster.local:8081'
+    STACKS_PROVISIONER_TIMEOUT: '5s'
+    STACKS_CREATE_WINDOW: '1m'
+    STACKS_CREATE_MAX: '1'
+    LOG_DIR: 'logs'
+    LOG_FILE_PREFIX: 'app'
+    LOG_MAX_BODY_BYTES: '1048576'
+    S3_ENABLED: 'true'
+    S3_REGION: 'ap-northeast-2'
+    S3_BUCKET: 'smctf-challenges-bucket'
+    # S3_ENDPOINT: ""
+    S3_FORCE_PATH_STYLE: 'false'
+    S3_PRESIGN_TTL: '15m'
+    BOOTSTRAP_ADMIN_TEAM: 'true'
+    BOOTSTRAP_ADMIN_USER: 'true'
+    BOOTSTRAP_ADMIN_USERNAME: 'admin'
+```
+
+#### Backend Secrets 구성
+
+```yaml
+secret:
+    DB_PASSWORD: 'app_password'
+    REDIS_PASSWORD: ''
+    JWT_SECRET: 'change-me-strong'
+    FLAG_HMAC_SECRET: 'change-me-too-strong'
+    STACKS_PROVISIONER_API_KEY: 'secret-strong'
+    # S3_ACCESS_KEY_ID: ""
+    # S3_SECRET_ACCESS_KEY: ""
+    BOOTSTRAP_ADMIN_USERNAME: 'admin'
+    BOOTSTRAP_ADMIN_EMAIL: 'admin@smctf.com'
+    BOOTSTRAP_ADMIN_PASSWORD: 'admin123!'
+```
+
+#### Backend Deployment 및 Service 구성
+
+```yaml
+deployment:
+    name: smctf-backend
+    replicas: 2
+    containerName: smctf-backend-app
+    image:
+        repository: <AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/backend
+        tag: latest
+        pullPolicy: IfNotPresent
+    port: 8080
+    nodeSelector:
+        role: backend
+    automountServiceAccountToken: true
+
+service:
+    name: smctf-backend
+    type: NodePort
+    port: 80
+    targetPort: 8080
+    nodePort: 30080
+```
+
+#### Backend Ingress 구성
+
+```yaml
+ingress:
+    enabled: true
+    className: alb
+    annotations:
+        kubernetes.io/ingress.class: alb
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: instance
+        alb.ingress.kubernetes.io/backend-protocol: HTTP
+        alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    # securityGroupId: sg-0316b2f31ab20189d
+    host: ''
+    path: /
+    pathType: Prefix
+    http:
+        enabled: false
+        listenPorts: '[{"HTTP":80}]'
+    https:
+        enabled: true
+        listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
+        certificateArn: arn:aws:acm:ap-northeast-2:<AWS_ACCOUNT_ID>:certificate/3cc6e4d6-c43f-411a-9b5a-3c07105fb2c6
+        sslRedirect: true
+```
+
+### Container Provisioner 구성
+
+```yaml
+provisioner:
+    enabled: true
+    serviceAccount:
+        name: container-provisioner
+        namespace: backend
+        annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/smctf-dev-irsa-container-provisioner
+    configName: container-provisioner-config
+    secretName: container-provisioner-secret
+
+    rbac:
+        clusterRoleName: container-provisioner-role
+        clusterRoleBindingName: container-provisioner-binding
+```
+
+#### Container Provisioner ConfigMap 구성
+
+```yaml
+config:
+    APP_ENV: 'local'
+    HTTP_ADDR: ':8081'
+    SHUTDOWN_TIMEOUT: '10s'
+    API_KEY_ENABLED: 'true'
+    LOG_DIR: 'logs'
+    LOG_FILE_PREFIX: 'app'
+    LOG_MAX_BODY_BYTES: '1048576'
+    STACK_NAMESPACE: 'stacks'
+    STACK_TTL: '2h'
+    STACK_SCHEDULER_INTERVAL: '10s'
+    STACK_NODEPORT_MIN: '31001'
+    STACK_NODEPORT_MAX: '32767'
+    STACK_PORT_LOCK_TTL: '30s'
+    STACK_NODE_ROLE: 'stack'
+    STACK_REQUIRE_INGRESS_NETWORK_POLICY: 'true'
+    DDB_USE_MOCK: 'false'
+    DDB_STACK_TABLE: 'smctf-container-provisioner-stacks'
+    DDB_CONSISTENT_READ: 'true'
+    AWS_REGION: 'ap-northeast-2'
+    # AWS_ENDPOINT: ""
+    K8S_USE_MOCK: 'false'
+    # K8S_KUBECONFIG: ""
+    # K8S_CONTEXT: ""
+    K8S_CLIENT_QPS: '20'
+    K8S_CLIENT_BURST: '40'
+    STACK_SCHEDULING_TIMEOUT: '20s'
+```
+
+#### Container Provisioner Secrets 구성
+
+```yaml
+secret:
+    API_KEY: 'secret-strong'
+    LOG_DISCORD_WEBHOOK_URL: ''
+    LOG_SLACK_WEBHOOK_URL: ''
+```
+
+#### Container Provisioner Deployment 및 Service 구성
+
+```yaml
+deployment:
+    name: container-provisioner
+    replicas: 2
+    containerName: container-provisioner-app
+    image:
+        repository: <AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/container-provisioner
+        tag: latest
+        pullPolicy: IfNotPresent
+    port: 8081
+    nodeSelector:
+        role: backend
+    automountServiceAccountToken: true
+
+service:
+    name: container-provisioner
+    type: ClusterIP
+    port: 8081
+    targetPort: 8081
+```
+
+### FluentBit 구성 (Logging)
+
+```yaml
+fluentbit:
+    enabled: true
+    namespace: logging
+    configMapName: fluent-bit-config
+    serviceAccount:
+        name: fluent-bit-cloudwatch
+        annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/smctf-dev-irsa-fluentbit
+    image:
+        repository: amazon/aws-for-fluent-bit
+        tag: 3.2.2
+        pullPolicy: IfNotPresent
+    env:
+        AWS_REGION: 'ap-northeast-2'
+        LOG_GROUP_NAME: '/aws/eks/smctf-dev/logs'
+        LOG_STREAM_PREFIX: 'k8s'
+    resources:
+        requests:
+            cpu: '50m'
+            memory: '100Mi'
+        limits:
+            cpu: '200m'
+            memory: '200Mi'
+    nodeSelector: {}
+    tolerations: []
+```
+
+### Prometheus 구성 (Monitoring)
+
+```yaml
+monitoring:
+    enabled: true
+    namespace: monitoring
+    serviceMonitor:
+        labels:
+            release: kube-prometheus-stack
+        interval: 10s
+        scrapeTimeout: 5s
+        metricsPath: /metrics
+        serviceSelectorLabels:
+            backend:
+                app.kubernetes.io/name: backend
+            containerProvisioner:
+                app.kubernetes.io/name: container-provisioner
+```
