@@ -4,6 +4,31 @@ sidebar:
     order: 1
 ---
 
+Add prerequisite challenge features by @yulmwu in #41
+Implement multi-port support in Container Provisioner by @yulmwu in #42
+Add SSE Handler for Real-Time Leaderboard and Revise Cache Invalidation Architecture by @yulmwu in #43
+chore(deps): bump go.opentelemetry.io/otel/sdk from 1.39.0 to 1.40.0 by @dependabot[bot] in #44
+Replace HMAC based flag verification with bcrypt hashing by @yulmwu in #45
+Add division(a.k.a tracks) feature by @yulmwu in #46
+
+### v1.3.0 (2026-03-01)
+
+아래와 같은 개선 및 기능이 추가되었습니다. 기존 버전과 호환되지 않는 변경 사항이 포함되어 있으며, [Container Provisioner 1.2.0](/changelog/container-provisioner) 이상과 호환됩니다. [Infrastructure v1.0.0](/changelog/infra)는 그대로 호환됩니다.
+
+---
+
+- 문제 풀이에 대한 사전 요구 조건(Prerequisite Challenge) 기능이 추가되었습니다. 특정 문제를 풀기 위해 먼저 풀어야 하는 문제를 설정할 수 있습니다. [#41](https://github.com/nullforu/smctf/pull/41)
+- 하나의 스택에서 다수의 컨테이너 포트 및 UDP 프로토콜을 지원합니다. 이에 따라 관련 API의 요청 및 응답 DTO가 변경되었습니다. [#42](https://github.com/nullforu/smctf/pull/42)
+- 실시간 리더보드 기능을 위한 SSE 핸들러가 추가되었으며, 이에 대한 스코어보드 계산과 관련한 내부 아키텍처가 수정되었습니다. [#43](https://github.com/nullforu/smctf/pull/43)
+- HMAC 기반의 플래그 검증 로직이 Bcrypt 해싱으로 대체되었습니다. 이에 따라 플래그 저장 방식과 검증 로직이 변경되었습니다. [#45](https://github.com/nullforu/smctf/pull/45)
+- 대회 트랙(디비전) 기능이 추가되었습니다. 이제 학생부, 일반부와 같이 전형(Track, 또는 Division)을 구분할 수 있습니다. [#46](https://github.com/nullforu/smctf/pull/46)
+
+---
+
+이는 프론트엔드 UI에도 영향을 미치는 업데이트로, 관련된 프론트엔드 업데이트가 함께 이루어졌습니다. [프론트엔드 v1.1.0](/changelog/frontend) 릴리즈를 참조하세요.
+
+대규모 업데이트 및 내부 아키텍처 변경, DB 스키마(모델) 등이 다수 포함된 릴리즈로 이에 따른 문서를 새롭게 개편하였습니다. 이전 내용은 [Github 레포지토리](https://github.com/nullforu/smctf-docs)의 `deprecated-smctf`에서 확인할 수 있습니다.
+
 ### v1.2.0 (2026-02-22)
 
 아래와 같은 개선 및 기능이 추가되었습니다. `v1.1.0`과 호환되며 [Container Provisioner v1.1.0](/changelog/container-provisioner), [Infrastructure v1.0.0](/changelog/infra)과 호환됩니다.
