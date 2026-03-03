@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS_ROOT = ROOT / "src" / "content" / "docs"
+PUBLIC_ROOT = ROOT / "public"
 
 LINK_RE = re.compile(r"\]\(([^)]+)\)")
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
@@ -87,9 +88,15 @@ def check_images() -> list[tuple[Path, str, Path]]:
         text = f.read_text(encoding="utf-8")
         for m in IMAGE_RE.finditer(text):
             href = m.group(1).strip().split("#", 1)[0]
+
             if href.startswith(("http://", "https://")):
                 continue
-            path = (f.parent / href).resolve()
+
+            if href.startswith("/"):
+                path = (PUBLIC_ROOT / href.lstrip("/")).resolve()
+            else:
+                path = (f.parent / href).resolve()
+
             if not path.exists():
                 missing.append((f, href, path))
 

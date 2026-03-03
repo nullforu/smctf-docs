@@ -4,13 +4,6 @@ sidebar:
     order: 1
 ---
 
-Add prerequisite challenge features by @yulmwu in #41
-Implement multi-port support in Container Provisioner by @yulmwu in #42
-Add SSE Handler for Real-Time Leaderboard and Revise Cache Invalidation Architecture by @yulmwu in #43
-chore(deps): bump go.opentelemetry.io/otel/sdk from 1.39.0 to 1.40.0 by @dependabot[bot] in #44
-Replace HMAC based flag verification with bcrypt hashing by @yulmwu in #45
-Add division(a.k.a tracks) feature by @yulmwu in #46
-
 ### v1.3.0 (2026-03-01)
 
 아래와 같은 개선 및 기능이 추가되었습니다. 기존 버전과 호환되지 않는 변경 사항이 포함되어 있으며, [Container Provisioner 1.2.0](/changelog/container-provisioner) 이상과 호환됩니다. [Infrastructure v1.0.0](/changelog/infra)는 그대로 호환됩니다.
@@ -41,7 +34,7 @@ Add division(a.k.a tracks) feature by @yulmwu in #46
 ---
 
 - Admin 팀 및 초기 관리자 생성 기능이 추가되었습니다. 활성화 시 자동 DB 마이그레이션과 함께 Admin 팀과 초기 관리자 계정이 생성되는 기능으로, DB에 아무 데이터가 없는 상태에서만 실행됩니다.
-- 자세한 내용은 [DB ER 및 마이그레이션](/smctf/db) 문서를 참조하세요. PR [#40](https://github.com/nullforu/smctf/pull/40)
+- 자세한 내용은 [DB ER 및 마이그레이션](/smctf/deployment/db) 문서를 참조하세요. PR [#40](https://github.com/nullforu/smctf/pull/40)
 
 ---
 
@@ -54,7 +47,7 @@ Add division(a.k.a tracks) feature by @yulmwu in #46
 ---
 
 - 가입 키(Registration Key)가 6자리 숫자가 아닌 16자리의 랜덤한 문자열로 변경되었으며, 일회성이 아닌 다회용으로 사용할 수 있도록 최대 사용 횟수 기능이 추가되었습니다.
-- 자세한 내용은 업데이트된 [가입 인증 키 관리](/smctf/admin/key-manage) 문서를 참조하세요. PR [#32](https://github.com/nullforu/smctf/pull/32)
+- 자세한 내용은 업데이트된 [가입 인증 키 관리](/smctf/admin/registration-key-manage) 문서를 참조하세요. PR [#32](https://github.com/nullforu/smctf/pull/32)
 
 ---
 
@@ -70,7 +63,7 @@ Add division(a.k.a tracks) feature by @yulmwu in #46
 ---
 
 - 관리자는 대회 보고서(리포트)를 생성할 수 있습니다. 이는 JSON 또는 YAML 형태로 제공되며, 추후 PDF 형태로도 제공될 예정입니다.
-- 자세한 내용은 업데이트된 [대회 보고서(리포트)](/smctf/admin/report) 문서를 참조하세요. PR [#37](https://github.com/nullforu/smctf/pull/37)
+- 자세한 내용은 업데이트된 [대회 보고서(리포트)](/smctf/admin/reports) 문서를 참조하세요. PR [#37](https://github.com/nullforu/smctf/pull/37)
 
 ---
 
