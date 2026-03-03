@@ -1,5 +1,5 @@
 ---
-title: 부록 A. API Reference
+title: 부록 A. REST API 문서
 sidebar:
     order: 1010
 ---
