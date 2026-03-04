@@ -15,5 +15,3 @@ SMCTF는 Brute Force 공격 방지와 서비스의 안정성을 위해 일부 AP
 너무 낮은 값으로 설정하면 정상적인 사용자가 불편을 겪을 수 있고, 너무 높은 값으로 설정하면 리소스가 과도하게 사용될 수 있으므로 주의해서 설정하세요.
 
 이들은 모두 Redis를 통해 구현된 Rate Limiting으로, 전체적인 L7 HTTP/HTTPS 트래픽에 대한 Rate Limiting이 필요한 경우에는 별도의 API Gateway나 WAF 솔루션 또는 Nginx, Cloudflare와 같은 리버스 프록시를 구성하세요.
-
-

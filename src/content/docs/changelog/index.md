@@ -34,7 +34,7 @@ sidebar:
 ---
 
 - Admin 팀 및 초기 관리자 생성 기능이 추가되었습니다. 활성화 시 자동 DB 마이그레이션과 함께 Admin 팀과 초기 관리자 계정이 생성되는 기능으로, DB에 아무 데이터가 없는 상태에서만 실행됩니다.
-- 자세한 내용은 [DB ER 및 마이그레이션](/smctf/deployment/db) 문서를 참조하세요. PR [#40](https://github.com/nullforu/smctf/pull/40)
+- 자세한 내용은 [DB ER 및 마이그레이션](/smctf/deployment/db-bootstrap) 문서를 참조하세요. PR [#40](https://github.com/nullforu/smctf/pull/40)
 
 ---
 
