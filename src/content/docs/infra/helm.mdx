@@ -5,7 +5,7 @@ sidebar:
 ---
 
 SMCTF의 백엔드 및 Container Provisioner, Ingress와 SA/RBAC 리소스 등을 배포하기 위해 Kubernetes 내 모든 리소스는 Helm 차트를 통해 배포됩니다.
-여기엔 EKS 클러스터 내에서 실행되는 애플리케이션의 로그를 수집하여 CloudWatch Logs로 전송하는 FluentBit DaemonSet과 Prometheus ServiceMonitor CRD 리소스도 포함됩니다.
+로깅/모니터링(FluentBit + ServiceMonitor)은 별도의 `kubernetes-observability` Helm 차트에서 관리합니다.
 
 아래의 명령어로 Helm 차트를 배포할 수 있습니다.
 
@@ -31,6 +31,24 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set region=ap-northeast-2
 ```
 
+Prometheus 스택 설치 후 observability 차트를 설치합니다. (ServiceMonitor CRD 포함)
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  -n monitoring --create-namespace \
+  --set grafana.enabled=false \
+  --set alertmanager.enabled=false \
+  --set prometheus.prometheusSpec.nodeSelector.role=backend \
+  --set prometheusOperator.nodeSelector.role=backend \
+  --set kubeStateMetrics.nodeSelector.role=backend \
+  --set nodeExporter.nodeSelector.role=backend
+
+helm upgrade --install smctf-observability ./kubernetes-observability -f kubernetes-observability/values.yaml
+```
+
 import { Aside } from '@astrojs/starlight/components'
 
 <Aside type='danger'>
@@ -48,18 +66,16 @@ Terraform 출력에 맞게 수정해야하는 필드는 아래와 같습니다.
 # - elbController.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
 # - backend.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
 # - provisioner.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
-# - fluentbit.serviceAccount.annotations.eks.amazonaws.com/role-arn (AWS Account ID/IRSA Role ARN)
 # - backend.config.DB_HOST (PostgreSQL RDS Endpoint)
 # - backend.config.REDIS_ADDR (ElastiCache Redis Endpoint, usually in the format "<cache-cluster-name>.xxxxxx.0001.use1.cache.amazonaws.com:6379")
 # - backend.ingress.securityGroupId (ALB Security Group ID)
 # - backend.ingress.https.certificateArn (ALB Certificate ARN, if HTTPS is enabled)
 # - provisioner.config.DDB_STACK_TABLE (DynamoDB Configuration)
-# - fluentbit.env.LOG_GROUP_NAME (CloudWatch Logs Group Name, usually in the format "/aws/eks/<project>-<env>/logs")
 ```
 
 - `backend.ingress.securityGroupId`는 설정하지 않고 주석처리 할 수 있습니다. 이 경우 자동으로 HTTP 80 포트 또는 HTTPS 443 포트가 열리도록 ALB 보안 그룹이 구성됩니다.
 - HTTPS Ingress를 위한 ACM은 따로 발급받은 인증서 ARN이 필요합니다. 이는 Terraform에서 ACM 인증서를 생성하지 않습니다.
-- CloudWatch Logs Group Name은 `/aws/eks/<project>-<env>/logs` 형식으로 설정되어야 하며, IRSA 설정으로 인해 고정된 형식이여야 합니다.
+- CloudWatch Logs Group Name은 `/aws/eks/<project>-<env>/logs` 형식으로 설정되어야 하며, IRSA 설정으로 인해 고정된 형식이여야 합니다. (observability 차트의 `values.yaml`에서 설정)
 
 `values.yaml` 업데이트 또는 특정 필드를 업데이트하려면 아래와 같은 Helm 명령어를 사용할 수 있습니다.
 
@@ -81,9 +97,9 @@ namespaces:
     create: true
     backend: backend
     stacks: stacks
-    logging: logging
-    monitoring: monitoring
 ```
+
+`logging`, `monitoring` 네임스페이스는 observability 차트에서 생성됩니다.
 
 ### AWS ELB Controller 구성
 
@@ -351,51 +367,7 @@ service:
     targetPort: 8081
 ```
 
-### FluentBit 구성 (Logging)
+### Observability 구성 (Logging/Monitoring)
 
-```yaml
-fluentbit:
-    enabled: true
-    namespace: logging
-    configMapName: fluent-bit-config
-    serviceAccount:
-        name: fluent-bit-cloudwatch
-        annotations:
-            eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/smctf-dev-irsa-fluentbit
-    image:
-        repository: amazon/aws-for-fluent-bit
-        tag: 3.2.2
-        pullPolicy: IfNotPresent
-    env:
-        AWS_REGION: 'ap-northeast-2'
-        LOG_GROUP_NAME: '/aws/eks/smctf-dev/logs'
-        LOG_STREAM_PREFIX: 'k8s'
-    resources:
-        requests:
-            cpu: '50m'
-            memory: '100Mi'
-        limits:
-            cpu: '200m'
-            memory: '200Mi'
-    nodeSelector: {}
-    tolerations: []
-```
-
-### Prometheus 구성 (Monitoring)
-
-```yaml
-monitoring:
-    enabled: true
-    namespace: monitoring
-    serviceMonitor:
-        labels:
-            release: kube-prometheus-stack
-        interval: 10s
-        scrapeTimeout: 5s
-        metricsPath: /metrics
-        serviceSelectorLabels:
-            backend:
-                app.kubernetes.io/name: backend
-            containerProvisioner:
-                app.kubernetes.io/name: container-provisioner
-```
+로깅(FluentBit)과 모니터링(ServiceMonitor)은 `kubernetes-observability/values.yaml`에서 관리합니다.
+자세한 구성은 [Observability 문서](/infra/observability)에서 확인하세요.
